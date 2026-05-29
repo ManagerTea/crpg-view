@@ -62,7 +62,7 @@ export function createCrpgController({ bridge, storage = localStorage, clock = w
 
   const handleEvent = (event) => {
     if (event.kind === "roles-snapshot") {
-      state.roles = Object.fromEntries(event.roles.map((role) => [role.identityId, role]));
+      state.roles = mergeRoles(state.roles, event.roles);
       if (state.current) state.current = applyRoleSnapshot(state.current, state.roles);
       state.pending = state.pending.map((message) => applyRoleSnapshot(message, state.roles));
       notify();
@@ -70,7 +70,11 @@ export function createCrpgController({ bridge, storage = localStorage, clock = w
     }
     if (event.kind === "message-created") {
       enqueueMessage(state, event.message);
-      startPlaybackIfIdle(clock, state, notify, setPlaybackTimer);
+      if (isHoldingFinalPage(state)) {
+        scheduleNextPageOrMessage(clock, state, notify, setPlaybackTimer);
+      } else {
+        startPlaybackIfIdle(clock, state, notify, setPlaybackTimer);
+      }
       return;
     }
     if (event.kind === "message-updated") {
@@ -173,6 +177,13 @@ export function colorsAreSimilar(first, second) {
   return distance < 85;
 }
 
+function mergeRoles(currentRoles, nextRoles) {
+  return {
+    ...currentRoles,
+    ...Object.fromEntries(nextRoles.map((role) => [role.identityId, role]))
+  };
+}
+
 function enqueueMessage(state, message) {
   const prepared = prepareMessage(applyRoleSnapshot(message, state.roles));
   state.latest = prepared;
@@ -264,6 +275,16 @@ function scheduleTyping(clock, state, notify, setTimer) {
   }, speed));
 }
 
+function isHoldingFinalPage(state) {
+  return Boolean(
+    state.current &&
+    !state.isTyping &&
+    !state.isWaiting &&
+    state.pageIndex >= state.current.pages.length - 1 &&
+    state.visibleText === currentPageText(state)
+  );
+}
+
 function scheduleNextPageOrMessage(clock, state, notify, setTimer) {
   if (state.current && state.pageIndex >= state.current.pages.length - 1 && state.pending.length === 0) {
     state.isWaiting = false;
@@ -274,6 +295,7 @@ function scheduleNextPageOrMessage(clock, state, notify, setTimer) {
 
   const waitMs = Math.max(0, Number(state.settings.endDelay) || 0) * 1000;
   state.isWaiting = true;
+  notify();
   setTimer(clock.setTimeout(() => {
     state.isWaiting = false;
     if (state.current && state.pageIndex < state.current.pages.length - 1) {

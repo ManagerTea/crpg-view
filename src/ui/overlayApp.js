@@ -49,7 +49,7 @@ app.innerHTML = `
     </label>
     <label class="setting-row">
       <span><strong>头像最大高度（px）</strong><small>立绘会按比例压缩，默认 400px。</small></span>
-      <input data-setting="portraitMaxHeight" type="number" min="120" max="900" />
+      <input data-setting="portraitMaxHeight" type="number" min="120" max="900" step="10" />
     </label>
     <label class="setting-row">
       <span><strong>句末等待时间（秒）</strong><small>保留给宿主扩展自动收起时使用。</small></span>
@@ -140,6 +140,7 @@ app.addEventListener("input", (event) => {
     elements.status.textContent = "SealChat 地址已保存，刷新页面后将重新建立 iframe 桥接。";
     return;
   }
+  if (input.type === "number" && input.value === "") return;
   const value = input.type === "checkbox" ? input.checked : input.value;
   if ((key === "backgroundColor" || key === "textColor") && willCreateLowContrast(key, value)) {
     const accepted = window.confirm("背景色与字体色过于接近，可能导致文字不可读。仍要使用吗？");
@@ -188,6 +189,7 @@ function hydrateSettings(settings) {
     const key = input.dataset.setting;
     if (key === "bridgeUrl") return;
     if (!(key in settings)) return;
+    if (input === document.activeElement) return;
     if (input.type === "checkbox") input.checked = Boolean(settings[key]);
     else input.value = settings[key];
   });

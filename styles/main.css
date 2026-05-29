@@ -160,7 +160,7 @@ input {
   z-index: 10;
   min-width: 360px;
   min-height: 58px;
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 28px;
   background: color-mix(in srgb, var(--dialogue-bg), transparent 5%);
@@ -207,15 +207,17 @@ input {
 }
 
 .dialogue.has-portrait .dialogue__content {
-  grid-template-columns: clamp(180px, calc(var(--portrait-max-height) * 0.55), 360px) 1fr;
-  padding-left: 0;
+  padding-left: clamp(112px, calc(var(--portrait-max-height) * 0.32), 180px);
 }
 
 .dialogue__portrait {
-  position: relative;
+  position: absolute;
+  left: 18px;
+  bottom: calc(100% - 52px);
+  z-index: 1;
   display: none;
-  align-self: end;
-  height: min(var(--portrait-max-height), calc(100% + 88px));
+  width: clamp(130px, calc(var(--portrait-max-height) * 0.58), 320px);
+  height: var(--portrait-max-height);
   margin: 0;
   overflow: visible;
   pointer-events: none;
@@ -227,7 +229,7 @@ input {
 
 .dialogue__portrait img {
   position: absolute;
-  left: 10px;
+  left: 0;
   bottom: 0;
   width: auto;
   max-width: 100%;
@@ -342,7 +344,11 @@ input {
   }
 
   .dialogue.has-portrait .dialogue__content {
-    grid-template-columns: 120px 1fr;
+    padding-left: 112px;
+  }
+
+  .dialogue__portrait {
+    width: 150px;
   }
 
   .setting-row {

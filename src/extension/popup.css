@@ -58,3 +58,13 @@ label {
   min-height: 1.4em;
   color: #f0c36c;
 }
+
+.popup-toggle {
+  grid-template-columns: 1fr auto;
+  padding: 8px 0;
+}
+
+.popup-toggle input {
+  width: 18px;
+  height: 18px;
+}

@@ -118,8 +118,15 @@ timers.shift()();
 assert.equal(lastState.visibleText, "Z");
 assert.equal(lastState.current.id, "stay");
 assert.equal(lastState.isWaiting, false);
-controller.updateSettings({ panelWidth: 100 });
+controller.receiveDebugEvent({ kind: "message-created", message: { id: "next", text: "N" } });
+assert.equal(lastState.pending.length, 1);
+for (let guard = 0; guard < 5 && lastState.current?.id !== "next"; guard += 1) timers.shift()();
+assert.equal(lastState.current.id, "next");
+timers.shift()();
+assert.equal(lastState.visibleText, "N");
+controller.updateSettings({ panelWidth: 100, portraitMaxHeight: 9999 });
 assert.equal(lastState.settings.panelWidth, 360);
+assert.equal(lastState.settings.portraitMaxHeight, 900);
 controller.dispose();
 
 console.log("smoke tests passed");
