@@ -20,6 +20,7 @@ assert.equal(normalized.id, "m1");
 assert.equal(normalized.speaker, "星尘");
 assert.equal(normalized.text, "测试消息");
 assert.equal(normalized.avatar, "avatar.png");
+assert.equal(normalizeBridgeMessage({ id: "m2", text: "555", title: "undefined" }).title, "");
 assert.equal(colorsAreSimilar("#111111", "#151515"), true);
 assert.equal(colorsAreSimilar("#000000", "#ffffff"), false);
 
@@ -104,6 +105,11 @@ controller.receiveDebugEvent({ kind: "message-updated", message: { id: "queued",
 assert.equal(lastState.visibleText, "");
 controller.receiveDebugEvent({ kind: "message-deleted", messageId: "queued" });
 assert.equal(lastState.current, null);
+controller.receiveDebugEvent({ kind: "message-created", message: { id: "stay", text: "Z" } });
+timers.shift()();
+assert.equal(lastState.visibleText, "Z");
+assert.equal(lastState.current.id, "stay");
+assert.equal(lastState.isWaiting, false);
 controller.updateSettings({ panelWidth: 100 });
 assert.equal(lastState.settings.panelWidth, 360);
 controller.dispose();

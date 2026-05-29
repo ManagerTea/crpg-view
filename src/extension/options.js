@@ -1,6 +1,7 @@
 const DEFAULTS = {
   enabled: true,
   showSealChatFrame: false,
+  showPageControls: false,
   sealChatUrl: "",
   typingSpeed: 50,
   fontSize: 24,

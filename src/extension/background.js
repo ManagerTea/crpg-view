@@ -3,6 +3,8 @@ chrome.runtime.onInstalled.addListener(() => {
     chrome.storage.local.set({
       settings: {
         enabled: true,
+        showSealChatFrame: false,
+        showPageControls: false,
         typingSpeed: 50,
         fontSize: 24,
         endDelay: 4,

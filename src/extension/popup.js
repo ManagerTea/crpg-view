@@ -5,7 +5,7 @@ document.addEventListener("click", async (event) => {
     chrome.runtime.openOptionsPage();
     return;
   }
-  const type = action === "sample" ? "crpg-view.sample" : "crpg-view.toggle-settings";
+  const type = "crpg-view.toggle-settings";
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab?.id) return setStatus("没有可用的活动标签页。");
   chrome.tabs.sendMessage(tab.id, { type }, (response) => {

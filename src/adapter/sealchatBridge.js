@@ -229,11 +229,11 @@ export function normalizeLegacyMessage(raw) {
   return {
     id: String(id),
     identityId: stringOrEmpty(payload.identityId),
-    speaker: String(speaker),
-    title: String(title),
-    text: String(text),
+    speaker: cleanText(speaker) || "旁白",
+    title: cleanText(title),
+    text: cleanText(text),
     color: stringOrEmpty(payload.color),
-    avatar: String(avatar),
+    avatar: cleanText(avatar),
     createdAt: toNumber(payload.createdAt) || Date.now(),
     raw: payload
   };
@@ -305,7 +305,13 @@ function coalesce(...values) {
 }
 
 function stringOrEmpty(value) {
-  return value === undefined || value === null ? "" : String(value);
+  return cleanText(value);
+}
+
+function cleanText(value) {
+  if (value === undefined || value === null) return "";
+  const text = String(value);
+  return text === "undefined" || text === "null" ? "" : text;
 }
 
 function toNumber(value) {

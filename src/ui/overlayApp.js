@@ -5,7 +5,6 @@ export function mountCrpgView(app, options = {}) {
   const storage = options.storage || localStorage;
 app.innerHTML = `
   <section class="toolbar" aria-label="CRPG 视图工具栏">
-    <button class="toolbar__button" data-action="sample">播放示例</button>
     <button class="toolbar__button" data-action="settings">设置</button>
     <span class="toolbar__status" data-role="status">等待 SealChat 消息流</span>
   </section>
@@ -32,6 +31,13 @@ app.innerHTML = `
         <small>关闭时 iframe 仍会加载以接收桥接消息，只隐藏聊天面板。</small>
       </span>
       <input data-setting="showSealChatFrame" type="checkbox" />
+    </label>
+    <label class="setting-row setting-row--inline">
+      <span>
+        <strong>显示页面内设置入口</strong>
+        <small>开启后才在页面上显示设置按钮与桥接状态。</small>
+      </span>
+      <input data-setting="showPageControls" type="checkbox" />
     </label>
     <label class="setting-row">
       <span><strong>打字速度（毫秒/字）</strong><small>每个可见字符的播放间隔。</small></span>
@@ -86,6 +92,7 @@ app.innerHTML = `
 `;
 
 const elements = {
+  toolbar: app.querySelector(".toolbar"),
   dialogue: app.querySelector('[data-role="dialogue"]'),
   settings: app.querySelector('[data-role="settings"]'),
   status: app.querySelector('[data-role="status"]'),
@@ -117,7 +124,6 @@ app.addEventListener("click", (event) => {
   if (action === "collapse") controller.toggleCollapsed();
   if (action === "skip") controller.skip();
   if (action === "latest") controller.fastForwardLatest();
-  if (action === "sample") if (options.autoPlaySample !== false) playSample();
 });
 
 app.addEventListener("input", (event) => {
@@ -143,10 +149,12 @@ app.addEventListener("input", (event) => {
 
 makeDraggable(app.querySelector('[data-role="drag-handle"]'));
 makeResizable(app.querySelector('[data-role="resize-handle"]'));
-playSample();
+if (options.showSettingsOnMount) toggleSettings();
 
 function render(state) {
   const { settings, current } = state;
+  elements.toolbar.hidden = !settings.showPageControls;
+  elements.dialogue.hidden = !settings.enabled || !current;
   elements.dialogue.style.setProperty("--dialogue-bg", settings.backgroundColor);
   elements.dialogue.style.setProperty("--dialogue-text", settings.textColor);
   elements.dialogue.style.setProperty("--dialogue-accent", settings.accentColor);
@@ -160,6 +168,7 @@ function render(state) {
 
   elements.speaker.textContent = current?.speaker || "等待消息";
   elements.title.textContent = current ? pageIndicator(state) : "";
+  elements.title.hidden = !elements.title.textContent;
   elements.text.textContent = state.visibleText || "连接 SealChat iframe 桥接后，这里会显示公开 IC 消息。消息可用 :: 分页。";
   elements.avatar.src = current?.avatar || settings.avatarUrl || createPlaceholderAvatar(settings.accentColor);
   elements.speaker.style.color = current?.color || settings.accentColor;
@@ -185,15 +194,6 @@ function toggleSettings() {
 function willCreateLowContrast(key, value) {
   const next = { ...latestState.settings, [key]: value };
   return colorsAreSimilar(next.backgroundColor, next.textColor);
-}
-
-function playSample() {
-  controller.receiveDebugMessage({
-    speaker: "星尘",
-    title: "SealChat CRPG View",
-    avatar: latestState?.settings.avatarUrl || "",
-    text: "1111——这是一条来自 CRPG View 的示例消息。长文字会随着打字机效果逐字出现，并在内容超过高度时自动滚动。点击 Skip 可以立即加载当前页。:: 第二页会在等待时间后自动播放；点击「最新」可以快进到队列里的最新消息。拖动面板顶部可移动，拖动右下角可调整长宽高。"
-  });
 }
 
 function pageIndicator(state) {
@@ -296,7 +296,6 @@ function readInitialSettings(storage) {
       bridge.close?.();
       app.replaceChildren();
     },
-    playSample,
     toggleSettings,
     updateSettings(settings) {
       controller.updateSettings(settings);

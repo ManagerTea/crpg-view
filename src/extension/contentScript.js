@@ -35,11 +35,6 @@ const SETTINGS_KEY = "settings";
 
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (!message || typeof message !== "object") return false;
-    if (message.type === "crpg-view.sample") {
-      api.playSample();
-      sendResponse({ ok: true });
-      return true;
-    }
     if (message.type === "crpg-view.toggle-settings") {
       api.toggleSettings();
       sendResponse({ ok: true });

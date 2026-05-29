@@ -2,6 +2,7 @@ const DEFAULT_SETTINGS = {
   enabled: true,
   sealChatUrl: "",
   showSealChatFrame: false,
+  showPageControls: false,
   typingSpeed: 50,
   fontSize: 24,
   endDelay: 4,
@@ -263,6 +264,13 @@ function scheduleTyping(clock, state, notify, setTimer) {
 }
 
 function scheduleNextPageOrMessage(clock, state, notify, setTimer) {
+  if (state.current && state.pageIndex >= state.current.pages.length - 1 && state.pending.length === 0) {
+    state.isWaiting = false;
+    state.visibleText = currentPageText(state);
+    notify();
+    return;
+  }
+
   const waitMs = Math.max(0, Number(state.settings.endDelay) || 0) * 1000;
   state.isWaiting = true;
   setTimer(clock.setTimeout(() => {
@@ -275,12 +283,17 @@ function scheduleNextPageOrMessage(clock, state, notify, setTimer) {
       scheduleTyping(clock, state, notify, setTimer);
       return;
     }
-    state.current = null;
-    state.visibleText = "";
-    state.pageIndex = 0;
-    state.pageCount = 0;
+    if (state.pending.length > 0) {
+      state.current = null;
+      state.visibleText = "";
+      state.pageIndex = 0;
+      state.pageCount = 0;
+      notify();
+      startPlaybackIfIdle(clock, state, notify, setTimer);
+      return;
+    }
+    state.visibleText = currentPageText(state);
     notify();
-    startPlaybackIfIdle(clock, state, notify, setTimer);
   }, waitMs));
 }
 
@@ -331,6 +344,7 @@ function sanitizeSettings(settings) {
     ...settings,
     enabled: Boolean(settings.enabled),
     showSealChatFrame: Boolean(settings.showSealChatFrame),
+    showPageControls: Boolean(settings.showPageControls),
     sealChatUrl: String(settings.sealChatUrl || ""),
     typingSpeed: clamp(Number(settings.typingSpeed), 5, 500, DEFAULT_SETTINGS.typingSpeed),
     fontSize: clamp(Number(settings.fontSize), 12, 48, DEFAULT_SETTINGS.fontSize),

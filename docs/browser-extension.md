@@ -12,7 +12,7 @@ This project now includes a Manifest V3 browser extension build. Load the reposi
 ## Use
 
 - The content script injects the CRPG floating overlay into normal web pages.
-- Click the extension action popup to play a sample dialogue or open the overlay settings.
+- Click the extension action popup to open the overlay settings when page controls are hidden.
 - Open the extension options page to configure the SealChat URL, colors, type speed, font size, and iframe visibility.
 - The overlay loads the configured SealChat URL as `{SealChat URL}?embed=obr` and starts the bridge handshake from the injected page.
 
