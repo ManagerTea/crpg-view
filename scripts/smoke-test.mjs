@@ -1,5 +1,10 @@
 import assert from "node:assert/strict";
-import { normalizeBridgeMessage } from "../src/adapter/sealchatBridge.js";
+import {
+  createEmbedUrl,
+  createHandshakeMessage,
+  normalizeBridgeEvent,
+  normalizeBridgeMessage
+} from "../src/adapter/sealchatBridge.js";
 import { colorsAreSimilar, createCrpgController } from "../src/plugin/crpgController.js";
 
 const normalized = normalizeBridgeMessage({
@@ -17,6 +22,50 @@ assert.equal(normalized.text, "测试消息");
 assert.equal(normalized.avatar, "avatar.png");
 assert.equal(colorsAreSimilar("#111111", "#151515"), true);
 assert.equal(colorsAreSimilar("#000000", "#ffffff"), false);
+
+const nonce = "n1";
+assert.deepEqual(createHandshakeMessage(nonce), {
+  type: "sealchat.bridge.handshake",
+  version: 1,
+  nonce,
+  want: ["roles", "messages"],
+  currentChannelOnly: true
+});
+assert.equal(createEmbedUrl("https://chat.example.test/root/"), "https://chat.example.test/root?embed=obr");
+assert.deepEqual(normalizeBridgeEvent({
+  type: "sealchat.bridge.handshake.ack",
+  version: 1,
+  nonce,
+  ok: true,
+  channelId: "c1"
+}), {
+  kind: "handshake-ack",
+  version: 1,
+  nonce,
+  ok: true,
+  worldId: "",
+  channelId: "c1"
+});
+const bridgeMessage = normalizeBridgeEvent({
+  type: "sealchat.bridge.message",
+  event: "message-created",
+  messageId: "bm1",
+  identityId: "r1",
+  contentText: "公开 IC",
+  icMode: "ic",
+  isWhisper: false
+});
+assert.equal(bridgeMessage.kind, "message-created");
+assert.equal(bridgeMessage.message.id, "bm1");
+assert.equal(bridgeMessage.message.identityId, "r1");
+assert.equal(normalizeBridgeEvent({
+  type: "sealchat.bridge.message",
+  event: "message-created",
+  messageId: "hidden",
+  contentText: "悄悄话",
+  icMode: "ic",
+  isWhisper: true
+}), null);
 
 const memory = new Map();
 const storage = {
@@ -36,12 +85,25 @@ let lastState;
 controller.subscribe((state) => {
   lastState = state;
 });
-controller.receiveDebugMessage({ speaker: "A", text: "BC" });
+controller.receiveDebugEvent({
+  kind: "roles-snapshot",
+  roles: [{ identityId: "r1", displayName: "星尘", color: "#ff3038", avatarUrl: "avatar.png" }]
+});
+controller.receiveDebugEvent({
+  kind: "message-created",
+  message: { id: "queued", identityId: "r1", text: "BC::DE" }
+});
 assert.equal(lastState.isTyping, true);
+assert.equal(lastState.current.speaker, "星尘");
 timers.shift()();
 assert.equal(lastState.visibleText, "B");
 controller.skip();
 assert.equal(lastState.visibleText, "BC");
+assert.equal(lastState.pageCount, 2);
+controller.receiveDebugEvent({ kind: "message-updated", message: { id: "queued", text: "FG" } });
+assert.equal(lastState.visibleText, "");
+controller.receiveDebugEvent({ kind: "message-deleted", messageId: "queued" });
+assert.equal(lastState.current, null);
 controller.updateSettings({ panelWidth: 100 });
 assert.equal(lastState.settings.panelWidth, 360);
 controller.dispose();

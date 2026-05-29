@@ -1,8 +1,6 @@
 import { createSealChatBridge } from "../adapter/sealchatBridge.js";
 import { colorsAreSimilar, createCrpgController } from "../plugin/crpgController.js";
 
-const bridge = createSealChatBridge();
-const controller = createCrpgController({ bridge });
 const app = document.querySelector("#app");
 let latestState = null;
 let textScroller = null;
@@ -27,8 +25,15 @@ app.innerHTML = `
       <input data-setting="enabled" type="checkbox" />
     </label>
     <label class="setting-row">
-      <span><strong>桥接地址</strong><small>可选。支持 EventSource 或 WebSocket；也可用 postMessage / BroadcastChannel。</small></span>
-      <input data-setting="bridgeUrl" type="url" placeholder="https://.../stream 或 wss://..." />
+      <span><strong>SealChat 地址</strong><small>用于加载 {SealChat URL}?embed=obr，并进行 bridge handshake。</small></span>
+      <input data-setting="sealChatUrl" type="url" placeholder="https://chat.example.com" />
+    </label>
+    <label class="setting-row setting-row--inline">
+      <span>
+        <strong>显示 SealChat iframe</strong>
+        <small>关闭时 iframe 仍会加载以接收桥接消息，只隐藏聊天面板。</small>
+      </span>
+      <input data-setting="showSealChatFrame" type="checkbox" />
     </label>
     <label class="setting-row">
       <span><strong>打字速度（毫秒/字）</strong><small>每个可见字符的播放间隔。</small></span>
@@ -72,9 +77,14 @@ app.innerHTML = `
         <div class="dialogue__text" data-role="text"></div>
       </div>
     </div>
-    <button class="dialogue__skip" data-action="skip">Skip</button>
+    <div class="dialogue__actions">
+      <button class="dialogue__skip" data-action="skip">Skip</button>
+      <button class="dialogue__skip" data-action="latest">最新</button>
+    </div>
     <div class="dialogue__resize" data-role="resize-handle" title="拖动调整宽高"></div>
   </article>
+
+  <iframe class="sealchat-frame" data-role="sealchat-frame" title="SealChat 嵌入桥接面板" hidden></iframe>
 `;
 
 const elements = {
@@ -84,8 +94,16 @@ const elements = {
   avatar: app.querySelector('[data-role="avatar"]'),
   speaker: app.querySelector('[data-role="speaker"]'),
   title: app.querySelector('[data-role="title"]'),
-  text: app.querySelector('[data-role="text"]')
+  text: app.querySelector('[data-role="text"]'),
+  sealChatFrame: app.querySelector('[data-role="sealchat-frame"]')
 };
+
+const initialSettings = readInitialSettings();
+const bridge = createSealChatBridge({
+  frame: elements.sealChatFrame,
+  sealChatUrl: initialSettings.sealChatUrl || new URLSearchParams(window.location.search).get("sealChatUrl") || ""
+});
+const controller = createCrpgController({ bridge });
 
 controller.subscribe((state) => {
   latestState = state;
@@ -98,6 +116,7 @@ app.addEventListener("click", (event) => {
   if (action === "settings") toggleSettings();
   if (action === "collapse") controller.toggleCollapsed();
   if (action === "skip") controller.skip();
+  if (action === "latest") controller.fastForwardLatest();
   if (action === "sample") playSample();
 });
 
@@ -105,9 +124,10 @@ app.addEventListener("input", (event) => {
   const input = event.target.closest("[data-setting]");
   if (!input || !latestState) return;
   const key = input.dataset.setting;
-  if (key === "bridgeUrl") {
-    localStorage.setItem("crpgView.bridgeUrl", input.value.trim());
-    elements.status.textContent = "桥接地址已保存，刷新页面后生效。";
+  if (key === "sealChatUrl") {
+    const value = input.value.trim();
+    controller.updateSettings({ [key]: value });
+    elements.status.textContent = "SealChat 地址已保存，刷新页面后将重新建立 iframe 桥接。";
     return;
   }
   const value = input.type === "checkbox" ? input.checked : input.value;
@@ -136,12 +156,14 @@ function render(state) {
   elements.dialogue.style.transform = `translate(${settings.panelX}px, ${settings.panelY}px)`;
   elements.dialogue.classList.toggle("is-collapsed", settings.collapsed);
   elements.dialogue.classList.toggle("is-disabled", !settings.enabled);
+  renderSealChatFrame(settings);
 
   elements.speaker.textContent = current?.speaker || "等待消息";
-  elements.title.textContent = current?.title || "";
-  elements.text.textContent = state.visibleText || "连接 SealChat 桥接消息流后，这里会显示 CRPG 样式的实时对话。";
+  elements.title.textContent = current ? pageIndicator(state) : "";
+  elements.text.textContent = state.visibleText || "连接 SealChat iframe 桥接后，这里会显示公开 IC 消息。消息可用 :: 分页。";
   elements.avatar.src = current?.avatar || settings.avatarUrl || createPlaceholderAvatar(settings.accentColor);
-  elements.status.textContent = state.error || (current ? `正在显示：${current.speaker}` : "等待 SealChat 消息流");
+  elements.speaker.style.color = current?.color || settings.accentColor;
+  elements.status.textContent = state.error || (current ? `正在显示：${current.speaker} · 队列 ${state.pending.length}` : state.status);
   hydrateSettings(settings);
   requestAnimationFrame(() => autoScrollText());
 }
@@ -149,10 +171,7 @@ function render(state) {
 function hydrateSettings(settings) {
   app.querySelectorAll("[data-setting]").forEach((input) => {
     const key = input.dataset.setting;
-    if (key === "bridgeUrl") {
-      input.value = localStorage.getItem("crpgView.bridgeUrl") || "";
-      return;
-    }
+    if (key === "bridgeUrl") return;
     if (!(key in settings)) return;
     if (input.type === "checkbox") input.checked = Boolean(settings[key]);
     else input.value = settings[key];
@@ -173,8 +192,31 @@ function playSample() {
     speaker: "星尘",
     title: "SealChat CRPG View",
     avatar: latestState?.settings.avatarUrl || "",
-    text: "1111——这是一条来自 CRPG View 的示例消息。长文字会随着打字机效果逐字出现，并在内容超过高度时自动滚动。点击 Skip 可以立即加载全部文本；拖动面板顶部可移动，拖动右下角可调整长宽高。"
+    text: "1111——这是一条来自 CRPG View 的示例消息。长文字会随着打字机效果逐字出现，并在内容超过高度时自动滚动。点击 Skip 可以立即加载当前页。:: 第二页会在等待时间后自动播放；点击「最新」可以快进到队列里的最新消息。拖动面板顶部可移动，拖动右下角可调整长宽高。"
   });
+}
+
+function pageIndicator(state) {
+  if (!state.pageCount || state.pageCount <= 1) return state.current?.title || "";
+  const page = `${state.pageIndex + 1}/${state.pageCount}`;
+  return state.current?.title ? `${state.current.title} · ${page}` : page;
+}
+
+function renderSealChatFrame(settings) {
+  if (!settings.sealChatUrl) {
+    elements.sealChatFrame.hidden = true;
+    elements.sealChatFrame.removeAttribute("src");
+    return;
+  }
+  try {
+    const url = new URL(settings.sealChatUrl);
+    url.searchParams.set("embed", "obr");
+    const src = url.toString();
+    if (elements.sealChatFrame.src !== src) elements.sealChatFrame.src = src;
+    elements.sealChatFrame.hidden = !settings.showSealChatFrame;
+  } catch {
+    elements.sealChatFrame.hidden = true;
+  }
 }
 
 function autoScrollText() {
@@ -235,4 +277,12 @@ function makeResizable(handle) {
 function createPlaceholderAvatar(accentColor) {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240"><rect width="240" height="240" rx="32" fill="#242331"/><circle cx="120" cy="86" r="42" fill="${accentColor}"/><path d="M47 206c14-48 44-72 73-72s59 24 73 72" fill="#d8e5ef" opacity=".85"/></svg>`;
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
+
+function readInitialSettings() {
+  try {
+    return JSON.parse(localStorage.getItem("crpgView.settings") || "{}");
+  } catch {
+    return {};
+  }
 }

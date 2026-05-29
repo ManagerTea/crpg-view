@@ -327,3 +327,40 @@ input {
     grid-template-columns: 1fr;
   }
 }
+
+.dialogue__actions {
+  position: absolute;
+  right: 30px;
+  bottom: 22px;
+  z-index: 3;
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+.dialogue:hover .dialogue__actions {
+  opacity: 1;
+}
+
+.dialogue__actions .dialogue__skip {
+  position: static;
+  opacity: 1;
+}
+
+.dialogue.is-collapsed .dialogue__actions {
+  display: none;
+}
+
+.sealchat-frame {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 8;
+  width: min(420px, calc(100vw - 36px));
+  height: min(620px, calc(100vh - 36px));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 22px;
+  background: rgba(10, 12, 18, 0.72);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.38);
+}
