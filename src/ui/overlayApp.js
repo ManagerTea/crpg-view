@@ -48,6 +48,10 @@ app.innerHTML = `
       <input data-setting="fontSize" type="number" min="12" max="48" />
     </label>
     <label class="setting-row">
+      <span><strong>头像最大高度（px）</strong><small>立绘会按比例压缩，默认 400px。</small></span>
+      <input data-setting="portraitMaxHeight" type="number" min="120" max="900" />
+    </label>
+    <label class="setting-row">
       <span><strong>句末等待时间（秒）</strong><small>保留给宿主扩展自动收起时使用。</small></span>
       <input data-setting="endDelay" type="number" min="0" max="60" />
     </label>
@@ -159,11 +163,13 @@ function render(state) {
   elements.dialogue.style.setProperty("--dialogue-text", settings.textColor);
   elements.dialogue.style.setProperty("--dialogue-accent", settings.accentColor);
   elements.dialogue.style.setProperty("--dialogue-font-size", `${settings.fontSize}px`);
+  elements.dialogue.style.setProperty("--portrait-max-height", `${settings.portraitMaxHeight}px`);
   elements.dialogue.style.width = `${settings.panelWidth}px`;
   elements.dialogue.style.height = settings.collapsed ? "58px" : `${settings.panelHeight}px`;
   elements.dialogue.style.transform = `translate(${settings.panelX}px, ${settings.panelY}px)`;
   elements.dialogue.classList.toggle("is-collapsed", settings.collapsed);
   elements.dialogue.classList.toggle("is-disabled", !settings.enabled);
+  elements.dialogue.classList.toggle("has-portrait", Boolean(current?.avatar || settings.avatarUrl));
   renderSealChatFrame(settings);
 
   elements.speaker.textContent = current?.speaker || "等待消息";

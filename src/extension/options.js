@@ -5,6 +5,7 @@ const DEFAULTS = {
   sealChatUrl: "",
   typingSpeed: 50,
   fontSize: 24,
+  portraitMaxHeight: 400,
   endDelay: 4,
   backgroundColor: "#111824",
   textColor: "#f5f0ff",

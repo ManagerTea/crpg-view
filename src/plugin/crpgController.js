@@ -11,6 +11,7 @@ const DEFAULT_SETTINGS = {
   accentColor: "#ff3038",
   panelWidth: 960,
   panelHeight: 320,
+  portraitMaxHeight: 400,
   panelX: 64,
   panelY: 56,
   collapsed: false,
@@ -318,7 +319,7 @@ function applyRoleSnapshot(message, roles) {
     ...message,
     speaker: message.speaker || role.displayName,
     color: message.color || role.color,
-    avatar: message.avatar || role.avatarUrl
+    avatar: role.avatarUrl || message.avatar
   };
 }
 
@@ -351,6 +352,7 @@ function sanitizeSettings(settings) {
     endDelay: clamp(Number(settings.endDelay), 0, 60, DEFAULT_SETTINGS.endDelay),
     panelWidth: clamp(Number(settings.panelWidth), 360, 1400, DEFAULT_SETTINGS.panelWidth),
     panelHeight: clamp(Number(settings.panelHeight), 180, 900, DEFAULT_SETTINGS.panelHeight),
+    portraitMaxHeight: clamp(Number(settings.portraitMaxHeight), 120, 900, DEFAULT_SETTINGS.portraitMaxHeight),
     panelX: clamp(Number(settings.panelX), 0, 5000, DEFAULT_SETTINGS.panelX),
     panelY: clamp(Number(settings.panelY), 0, 5000, DEFAULT_SETTINGS.panelY)
   };

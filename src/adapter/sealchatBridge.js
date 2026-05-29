@@ -220,7 +220,7 @@ export function normalizeLegacyMessage(raw) {
 
   const text = coalesce(payload.text, payload.contentText, payload.content, payload.message, payload.body, "");
   const speaker = coalesce(payload.speaker, payload.displayName, payload.name, payload.characterName, payload.actorName, "旁白");
-  const avatar = coalesce(payload.avatar, payload.avatarUrl, payload.portrait, payload.image, payload.icon, "");
+  const avatar = coalesce(payload.avatar, payload.avatarUrl, payload.portrait, payload.portraitUrl, payload.image, payload.imageUrl, payload.icon, "");
   const title = coalesce(payload.title, payload.sceneTitle, payload.subtitle, "");
   const id = coalesce(payload.id, payload.messageId, `${Date.now()}-${Math.random().toString(16).slice(2)}`);
 
@@ -281,7 +281,7 @@ function normalizeRole(role) {
     identityId: String(role.identityId),
     displayName: stringOrEmpty(role.displayName),
     color: safeCssColor(role.color) ? String(role.color) : "",
-    avatarUrl: stringOrEmpty(role.avatarUrl)
+    avatarUrl: stringOrEmpty(role.avatarUrl || role.avatar || role.portrait || role.portraitUrl || role.image || role.imageUrl)
   };
 }
 
@@ -311,7 +311,17 @@ function stringOrEmpty(value) {
 function cleanText(value) {
   if (value === undefined || value === null) return "";
   const text = String(value);
-  return text === "undefined" || text === "null" ? "" : text;
+  if (text === "undefined" || text === "null") return "";
+  return decodeHtmlEntities(text);
+}
+
+function decodeHtmlEntities(text) {
+  return text
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
 }
 
 function toNumber(value) {

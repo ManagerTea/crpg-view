@@ -153,6 +153,7 @@ input {
   --dialogue-text: #f5f0ff;
   --dialogue-accent: #ff3038;
   --dialogue-font-size: 24px;
+  --portrait-max-height: 400px;
   position: fixed;
   top: 0;
   left: 0;
@@ -199,27 +200,42 @@ input {
 
 .dialogue__content {
   display: grid;
-  grid-template-columns: minmax(170px, 210px) 1fr;
-  gap: 28px;
+  grid-template-columns: 1fr;
+  gap: 0;
   height: 100%;
-  padding: 24px 74px 24px 24px;
+  padding: 22px 74px 22px 24px;
+}
+
+.dialogue.has-portrait .dialogue__content {
+  grid-template-columns: clamp(180px, calc(var(--portrait-max-height) * 0.55), 360px) 1fr;
+  padding-left: 0;
 }
 
 .dialogue__portrait {
-  display: grid;
-  place-items: center;
-  align-self: stretch;
+  position: relative;
+  display: none;
+  align-self: end;
+  height: min(var(--portrait-max-height), calc(100% + 88px));
   margin: 0;
-  border-radius: 28px;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.03));
-  box-shadow: 0 20px 25px rgba(0, 0, 0, 0.25);
+  overflow: visible;
+  pointer-events: none;
+}
+
+.dialogue.has-portrait .dialogue__portrait {
+  display: block;
 }
 
 .dialogue__portrait img {
-  width: 84%;
-  height: 84%;
+  position: absolute;
+  left: 10px;
+  bottom: 0;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: var(--portrait-max-height);
   object-fit: contain;
-  filter: drop-shadow(0 10px 12px rgba(0, 0, 0, 0.45));
+  object-position: bottom center;
+  filter: drop-shadow(0 16px 18px rgba(0, 0, 0, 0.45));
 }
 
 .dialogue__body {
@@ -243,8 +259,10 @@ input {
 
 .dialogue__text {
   flex: 1;
-  overflow: auto;
-  padding-right: 8px;
+  min-height: 0;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  padding-right: 12px;
   font-size: var(--dialogue-font-size);
   font-weight: 700;
   line-height: 1.55;
@@ -253,12 +271,12 @@ input {
 }
 
 .dialogue__text::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
 }
 
 .dialogue__text::-webkit-scrollbar-thumb {
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.32);
 }
 
 .dialogue__skip {
@@ -318,9 +336,13 @@ input {
 
 @media (max-width: 720px) {
   .dialogue__content {
-    grid-template-columns: 112px 1fr;
+    grid-template-columns: 1fr;
     gap: 16px;
     padding: 18px 58px 18px 18px;
+  }
+
+  .dialogue.has-portrait .dialogue__content {
+    grid-template-columns: 120px 1fr;
   }
 
   .setting-row {

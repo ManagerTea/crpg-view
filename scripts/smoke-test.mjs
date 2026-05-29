@@ -20,7 +20,9 @@ assert.equal(normalized.id, "m1");
 assert.equal(normalized.speaker, "星尘");
 assert.equal(normalized.text, "测试消息");
 assert.equal(normalized.avatar, "avatar.png");
-assert.equal(normalizeBridgeMessage({ id: "m2", text: "555", title: "undefined" }).title, "");
+const decoded = normalizeBridgeMessage({ id: "m2", text: "&lt;遥名玖玖里&gt;掷出了 d5=3", title: "undefined" });
+assert.equal(decoded.title, "");
+assert.equal(decoded.text, "<遥名玖玖里>掷出了 d5=3");
 assert.equal(colorsAreSimilar("#111111", "#151515"), true);
 assert.equal(colorsAreSimilar("#000000", "#ffffff"), false);
 
@@ -96,6 +98,12 @@ controller.receiveDebugEvent({
 });
 assert.equal(lastState.isTyping, true);
 assert.equal(lastState.current.speaker, "星尘");
+assert.equal(lastState.current.avatar, "avatar.png");
+controller.receiveDebugEvent({
+  kind: "roles-snapshot",
+  roles: [{ identityId: "r1", displayName: "星尘", color: "#ff3038", avatarUrl: "new-avatar.png" }]
+});
+assert.equal(lastState.current.avatar, "new-avatar.png");
 timers.shift()();
 assert.equal(lastState.visibleText, "B");
 controller.skip();
