@@ -1,0 +1,329 @@
+:root {
+  color-scheme: dark;
+  font-family: "Noto Serif SC", "Source Han Serif SC", Georgia, serif;
+  background: radial-gradient(circle at top left, rgba(47, 87, 124, 0.4), transparent 28%), #090b12;
+  color: #f5f0ff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  overflow: hidden;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 80px 80px;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.toolbar {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(13, 17, 29, 0.72);
+  color: #e8def8;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+}
+
+.toolbar__button,
+.dialogue__skip,
+.icon-button {
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: currentColor;
+  cursor: pointer;
+  transition: transform 160ms ease, background 160ms ease;
+}
+
+.toolbar__button {
+  padding: 8px 14px;
+}
+
+.toolbar__button:hover,
+.dialogue__skip:hover,
+.icon-button:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.toolbar__status {
+  max-width: 36vw;
+  overflow: hidden;
+  color: #c8bfd2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settings {
+  position: fixed;
+  top: 80px;
+  left: 16px;
+  z-index: 30;
+  width: min(660px, calc(100vw - 32px));
+  max-height: calc(100vh - 100px);
+  overflow: auto;
+  padding: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  background: linear-gradient(90deg, rgba(14, 18, 29, 0.92) 0 52%, rgba(17, 18, 28, 0.97) 52% 100%);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(18px);
+}
+
+.settings__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.settings h1 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.icon-button {
+  width: 34px;
+  height: 34px;
+}
+
+.setting-row {
+  display: grid;
+  grid-template-columns: minmax(210px, 1fr) minmax(160px, 288px);
+  gap: 18px;
+  align-items: center;
+  padding: 18px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.setting-row--inline {
+  grid-template-columns: 1fr auto;
+}
+
+.setting-row strong {
+  display: block;
+  margin-bottom: 8px;
+  color: #eee7d8;
+  font-size: 18px;
+}
+
+.setting-row small {
+  display: block;
+  color: #b7aa9d;
+  line-height: 1.5;
+}
+
+.setting-row input {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 7px;
+  background: #302734;
+  color: #eadbc8;
+  padding: 8px 12px;
+}
+
+.setting-row input[type="checkbox"] {
+  width: 22px;
+  min-height: 22px;
+  accent-color: #f3a339;
+}
+
+.setting-row input[type="color"] {
+  padding: 3px;
+}
+
+.dialogue {
+  --dialogue-bg: #111824;
+  --dialogue-text: #f5f0ff;
+  --dialogue-accent: #ff3038;
+  --dialogue-font-size: 24px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  min-width: 360px;
+  min-height: 58px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 28px;
+  background: color-mix(in srgb, var(--dialogue-bg), transparent 5%);
+  color: var(--dialogue-text);
+  box-shadow: 0 26px 55px rgba(0, 0, 0, 0.42), inset 0 1px rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+}
+
+.dialogue__drag {
+  position: absolute;
+  inset: 0 78px auto 0;
+  height: 54px;
+  cursor: move;
+}
+
+.dialogue__collapse,
+.dialogue__minimize {
+  position: absolute;
+  top: 28px;
+  z-index: 3;
+  border: 0;
+  background: transparent;
+  color: color-mix(in srgb, var(--dialogue-text), transparent 18%);
+  cursor: pointer;
+  font-size: 26px;
+  line-height: 1;
+}
+
+.dialogue__collapse {
+  right: 70px;
+  transform: rotate(180deg);
+}
+
+.dialogue__minimize {
+  right: 32px;
+}
+
+.dialogue__content {
+  display: grid;
+  grid-template-columns: minmax(170px, 210px) 1fr;
+  gap: 28px;
+  height: 100%;
+  padding: 24px 74px 24px 24px;
+}
+
+.dialogue__portrait {
+  display: grid;
+  place-items: center;
+  align-self: stretch;
+  margin: 0;
+  border-radius: 28px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.03));
+  box-shadow: 0 20px 25px rgba(0, 0, 0, 0.25);
+}
+
+.dialogue__portrait img {
+  width: 84%;
+  height: 84%;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 12px rgba(0, 0, 0, 0.45));
+}
+
+.dialogue__body {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  padding-top: 4px;
+}
+
+.dialogue__body h2 {
+  margin: 0 0 12px;
+  color: var(--dialogue-accent);
+  font-size: clamp(24px, calc(var(--dialogue-font-size) * 1.1), 36px);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--dialogue-accent), transparent 50%);
+}
+
+.dialogue__body p {
+  margin: -4px 0 12px;
+  color: color-mix(in srgb, var(--dialogue-text), transparent 26%);
+}
+
+.dialogue__text {
+  flex: 1;
+  overflow: auto;
+  padding-right: 8px;
+  font-size: var(--dialogue-font-size);
+  font-weight: 700;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  scroll-behavior: smooth;
+}
+
+.dialogue__text::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dialogue__text::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.dialogue__skip {
+  position: absolute;
+  right: 30px;
+  bottom: 22px;
+  z-index: 3;
+  padding: 8px 14px;
+  opacity: 0;
+}
+
+.dialogue:hover .dialogue__skip {
+  opacity: 1;
+}
+
+.dialogue__resize {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 26px;
+  height: 26px;
+  cursor: nwse-resize;
+}
+
+.dialogue__resize::after {
+  position: absolute;
+  right: 7px;
+  bottom: 7px;
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid rgba(255, 255, 255, 0.32);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.32);
+  content: "";
+}
+
+.dialogue.is-collapsed .dialogue__content,
+.dialogue.is-collapsed .dialogue__skip,
+.dialogue.is-collapsed .dialogue__resize {
+  display: none;
+}
+
+.dialogue.is-collapsed::before {
+  display: block;
+  padding: 16px 78px 16px 24px;
+  color: var(--dialogue-text);
+  content: "CRPG 对话框已折叠";
+  font-weight: 700;
+}
+
+.dialogue.is-collapsed .dialogue__collapse {
+  transform: rotate(0deg);
+}
+
+.dialogue.is-disabled {
+  opacity: 0.48;
+}
+
+@media (max-width: 720px) {
+  .dialogue__content {
+    grid-template-columns: 112px 1fr;
+    gap: 16px;
+    padding: 18px 58px 18px 18px;
+  }
+
+  .setting-row {
+    grid-template-columns: 1fr;
+  }
+}

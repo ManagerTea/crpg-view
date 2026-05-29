@@ -1,0 +1,19 @@
+{
+  "name": "crpg-view",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Standalone browser CRPG dialogue overlay for SealChat bridge streams.",
+  "type": "module",
+  "scripts": {
+    "dev": "python3 -m http.server 5173",
+    "check": "node --check src/adapter/sealchatBridge.js && node --check src/plugin/crpgController.js && node --check src/ui/app.js && node --check scripts/smoke-test.mjs",
+    "test": "node scripts/smoke-test.mjs"
+  },
+  "keywords": [
+    "sealchat",
+    "crpg",
+    "vtt",
+    "overlay"
+  ],
+  "license": "MIT"
+}
