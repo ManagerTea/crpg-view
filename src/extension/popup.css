@@ -1,0 +1,60 @@
+:root {
+  color-scheme: dark;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #111824;
+  color: #f5f0ff;
+}
+
+body {
+  min-width: 280px;
+  margin: 0;
+}
+
+.popup,
+.options {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+}
+
+.options {
+  width: min(720px, calc(100vw - 32px));
+  margin: 0 auto;
+}
+
+h1 {
+  margin: 0;
+  color: #ff4a52;
+  font-size: 20px;
+}
+
+p {
+  margin: 0;
+  color: #c9c1d4;
+}
+
+button,
+input {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  background: #2c2432;
+  color: #f5f0ff;
+  font: inherit;
+  padding: 10px 12px;
+}
+
+button {
+  cursor: pointer;
+}
+
+label {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) minmax(180px, 2fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.status {
+  min-height: 1.4em;
+  color: #f0c36c;
+}

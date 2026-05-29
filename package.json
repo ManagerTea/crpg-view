@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "python3 -m http.server 5173",
-    "check": "node --check src/adapter/sealchatBridge.js && node --check src/plugin/crpgController.js && node --check src/ui/app.js && node --check scripts/smoke-test.mjs",
+    "check": "node --check src/adapter/sealchatBridge.js && node --check src/plugin/crpgController.js && node --check src/ui/overlayApp.js && node --check src/ui/app.js && node --check src/extension/background.js && node --check src/extension/contentScript.js && node --check src/extension/options.js && node --check src/extension/popup.js && node --check scripts/smoke-test.mjs && node -e \"JSON.parse(require('fs').readFileSync('manifest.json', 'utf8'))\"",
     "test": "node scripts/smoke-test.mjs"
   },
   "keywords": [

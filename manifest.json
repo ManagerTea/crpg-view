@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "name": "SealChat CRPG View",
+  "version": "0.2.0",
+  "description": "在任意浏览器页面上显示 SealChat CRPG 样式实时对话框。",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "src/extension/background.js"
+  },
+  "action": {
+    "default_title": "SealChat CRPG View",
+    "default_popup": "src/extension/popup.html"
+  },
+  "options_page": "src/extension/options.html",
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/extension/contentScript.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "src/ui/overlayApp.js",
+        "src/adapter/sealchatBridge.js",
+        "src/plugin/crpgController.js",
+        "styles/main.css"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
